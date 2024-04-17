@@ -1,13 +1,13 @@
-// Описаний у документації
 import iziToast from 'izitoast';
-// Додатковий імпорт стилів
 import 'izitoast/dist/css/iziToast.min.css';
+
 const form = document.querySelector('.form');
 
 form.addEventListener('submit', event => {
+  event.preventDefault(); // Запобігаємо стандартному відправленню форми
+
   const delay = Number(form.delay.value);
 
-  event.preventDefault();
   const promise = new Promise((resolve, reject) => {
     if (form.state.value === 'fulfilled') {
       setTimeout(() => {
@@ -19,6 +19,7 @@ form.addEventListener('submit', event => {
       }, delay);
     }
   });
+
   promise
     .then(delay => {
       iziToast.show({
@@ -36,5 +37,6 @@ form.addEventListener('submit', event => {
         color: 'red',
       });
     });
+
   event.currentTarget.reset();
 });

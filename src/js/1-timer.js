@@ -10,16 +10,9 @@ const minutesTime = document.querySelector('[data-minutes]');
 const secondsTime = document.querySelector('[data-seconds]');
 const input = document.querySelector('#datetime-picker');
 
-startBtn.addEventListener('click', () => {
-  startBtn.disabled = true;
-  input.disabled = true;
-  startTimer();
-});
-
-startBtn.disabled = true;
 let timeDifference;
 let intervalId;
-
+let timerStarted = false;
 
 const options = {
   defaultDate: null,
@@ -37,6 +30,9 @@ const options = {
       timeDifference = userDate - startDate;
       updateClockface(convertMs(timeDifference));
 
+      if (timerStarted) {
+        resetTimer();
+      }
     } else {
       iziToast.error({
         fontSize: 'large',
@@ -45,7 +41,7 @@ const options = {
         messageColor: 'white',
         timeout: 2000,
         backgroundColor: 'red',
-        message: ("Please choose a date in the future")
+        message: 'Please choose a date in the future'
       });
     }
   }
@@ -53,7 +49,40 @@ const options = {
 
 flatpickr('#datetime-picker', options);
 
+startBtn.addEventListener('click', () => {
+  if (!timerStarted) {
+    startBtn.disabled = true;
+    input.disabled = true;
+    startTimer();
+  } else {
+    location.reload(); // Reloading the page when the timer is active
+  }
+});
 
+function resetTimer() {
+  clearInterval(intervalId);
+  updateClockface({ days: '00', hours: '00', minutes: '00', seconds: '00' });
+  timerStarted = false;
+}
+
+function startTimer() {
+  if (!timerStarted) {
+    clearInterval(intervalId);
+    intervalId = setInterval(timer, 1000);
+    timerStarted = true;
+  }
+}
+
+function timer() {
+  if (timeDifference > 1000) {
+    timeDifference -= 1000;
+    updateClockface(convertMs(timeDifference));
+  } else {
+    clearInterval(intervalId);
+    input.disabled = false;
+    timerStarted = false;
+  }
+}
 
 function updateClockface({ days, hours, minutes, seconds }) {
   daysTime.textContent = `${days}`;
@@ -62,42 +91,19 @@ function updateClockface({ days, hours, minutes, seconds }) {
   secondsTime.textContent = `${seconds}`;
 }
 
-function startTimer() {
-  clearInterval(intervalId);
-  intervalId = setInterval(timer, 1000);
-}
-
-function timer() {
-
-  if (timeDifference > 1000) {
-
-    timeDifference -= 1000;
-    updateClockface(convertMs(timeDifference))
-
-  } else {
-    clearInterval(intervalId);
-    input.disabled = false;
-  }
-}
-
 function addLeadingZero(value) {
-  return String(value).padStart(2, "0");
+  return String(value).padStart(2, '0');
 }
 
 function convertMs(time) {
-  // Number of milliseconds per unit of time
   const second = 1000;
   const minute = second * 60;
   const hour = minute * 60;
   const day = hour * 24;
 
-  // Remaining days
   const days = addLeadingZero(Math.floor(time / day));
-  // Remaining hours
   const hours = addLeadingZero(Math.floor((time % day) / hour));
-  // Remaining minutes
   const minutes = addLeadingZero(Math.floor(((time % day) % hour) / minute));
-  // Remaining seconds
   const seconds = addLeadingZero(Math.floor((((time % day) % hour) % minute) / second));
 
   return { days, hours, minutes, seconds };
