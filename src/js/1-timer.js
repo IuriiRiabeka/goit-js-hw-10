@@ -14,6 +14,7 @@ let timeDifference;
 let intervalId;
 let timerStarted = false;
 
+
 const options = {
   defaultDate: null,
   enableTime: true,
@@ -51,13 +52,30 @@ flatpickr('#datetime-picker', options);
 
 startBtn.addEventListener('click', () => {
   if (!timerStarted) {
-    startBtn.disabled = true;
-    input.disabled = true;
-    startTimer();
+    const currentDate = Date.now(); // Current time in milliseconds since January 1, 1970
+    const selectedDate = new Date(input.value).getTime(); // Selected date by the user in milliseconds since January 1, 1970
+    timeDifference = selectedDate - currentDate; // Difference between the selected date and the current time
+    if (timeDifference > 0) { // Check to ensure the timer does not count negative time
+
+      startBtn.disabled = true;
+      input.disabled = true;
+      startTimer();
+    } else {
+      iziToast.error({
+        fontSize: 'large',
+        close: false,
+        position: 'topRight',
+        messageColor: 'white',
+        timeout: 2000,
+        backgroundColor: 'red',
+        message: 'Please choose a date in the future'
+      });
+    }
   } else {
-    location.reload(); // Reloading the page when the timer is active
+    location.reload(); // Перезавантаження сторінки, коли таймер активний
   }
 });
+
 
 function resetTimer() {
   clearInterval(intervalId);
@@ -75,6 +93,7 @@ function startTimer() {
 
 function timer() {
   if (timeDifference > 1000) {
+
     timeDifference -= 1000;
     updateClockface(convertMs(timeDifference));
   } else {
@@ -108,3 +127,4 @@ function convertMs(time) {
 
   return { days, hours, minutes, seconds };
 }
+
